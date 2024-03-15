@@ -1,8 +1,18 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  description = "A flake-managed source for configuring an Elvish shell";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    ez-configs.url = "github:ehllie/ez-configs";
+  };
+
   outputs = inputs @ {flake-parts, ...}:
     flake-parts.lib.mkFlake {inherit inputs;} {
+      imports = [inputs.ez-configs.flakeModule];
+
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
+
       perSystem = {
         lib,
         pkgs,
@@ -27,19 +37,45 @@
           ];
         });
 
-        packages.elvish = pkgs.symlinkJoin {
-          name = "elvish";
-          paths = [self'.packages.elvish];
-          buildInputs = [pkgs.makeWrapper];
-          postBuild = ''
-            wrapProgram $out/bin/elvish --set CGO_ENABLED : 1
-          '';
+        packages.elvishPlugins = {
+          plugin1 =
+            pkgs.fetchFromGitHub {
+            };
+          plugin2 =
+            pkgs.fetchFromGitHub {
+            };
         };
 
-        packages.default = self'.packages.elvish;
+        lib.elvishWithPlugins = plugins:
+          pkgs.symlinkJoin {
+            name = "elvish-with-plugins";
+            paths = [self'.packages.elvish] ++ plugins;
+            buildInputs = [pkgs.makeWrapper];
+            postBuild = ''
+              wrapProgram $out/bin/elvish --set CGO_ENABLED 1
+            '';
+          };
+
+        packages.elvishWithPlugins = self'.lib.elvishWithPlugins (
+          with self'.packages.elvishPlugins; [
+            plugin1
+            plugin2
+            # ...
+          ]
+        );
+
+        packages.default = self'.packages.elvishWithPlugins;
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [self'.packages.default];
+        };
+
+        nixosModules = {
+          elvish = import ./modules/elvish.nix;
+        };
+
+        homeManagerModules = {
+          elvish = import ./modules/elvish.nix;
         };
       };
     };
