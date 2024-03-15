@@ -24,6 +24,15 @@
         self',
         ...
       }: {
+        overlayAttrs = {
+          inherit
+            (self'.packages)
+            elvish
+            elvishPlugins
+            elvfmt
+            ;
+        };
+
         formatter = pkgs.alejandra;
 
         packages.elvish = pkgs.elvish.overrideAttrs (oldAttrs: rec {
@@ -53,17 +62,9 @@
           };
         };
 
+        package.elvfmt = pkgs.hello; # TODO: replace with elvfmt
+
         packages.default = self'.packages.elvish;
-      };
-
-      flake = {
-        nixosModules = {
-          elvish = import ./modules/elvish.nix;
-        };
-
-        homeManagerModules = {
-          elvish = import ./modules/elvish.nix;
-        };
       };
     };
 }
