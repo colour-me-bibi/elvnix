@@ -9,7 +9,7 @@
       imports = [
         inputs.flake-parts.flakeModules.easyOverlay
       ];
-      systems = inputs.nixpkgs.lib.systems.flakeExposed;
+      systems = ["x86_64-linux"];
       perSystem = {
         config,
         pkgs,
@@ -73,11 +73,11 @@
       };
       flake = {
         homeModules = rec {
-          elvnix = ./home-modules/elvnix;
+          elvnix = import ./home-modules/elvnix {};
           default = elvnix;
         };
         nixosModules = rec {
-          elvnix = ./nixos-modules/elvnix;
+          elvnix = import ./nixos-modules/elvnix {};
           default = elvnix;
         };
       };
