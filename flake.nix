@@ -22,13 +22,13 @@
         overlayAttrs = {
           inherit
             (self'.packages)
+            elvfmt
             elvish
             elvishPlugins
-            elvfmt
             ;
         };
         formatter = pkgs.alejandra;
-        packages = {
+        packages = rec {
           elvish = pkgs.elvish.overrideAttrs (oldAttrs: rec {
             version = "unstable-${builtins.substring 0 7 rev}";
             rev = "62d69b4fa223e1e38c4fa0b0af60620764410d68";
@@ -46,7 +46,7 @@
               "-X src.elv.sh/pkg/buildinfo.Reproducible=true"
             ];
           });
-          packages.elvishPlugins = {
+          elvishPlugins = {
             sample-plugin = pkgs.fetchFromGitHub {
               owner = "elves";
               repo = "sample-plugin";
@@ -54,8 +54,21 @@
               hash = "sha256-IhtVCa+9BIT9IOZY9CX29ecAVZ8lrIetdPNi5XlIwzA=";
             };
           };
-          # package.elvfmt = pkgs.stdenv.mkDerivation {};
-          packages.default = self'.packages.elvish;
+          elvfmt = pkgs.stdenv.mkDerivation {
+            name = "elvfmt";
+            src = pkgs.fetchFromGitHub {
+              owner = "elves";
+              repo = "elvish";
+              rev = "62d69b4fa223e1e38c4fa0b0af60620764410d68";
+              sha256 = "sha256-MZ6i6Hp0Zkt1XOFGhjZQuqmCOodzG+9FHJ1ttUNivkU=";
+            };
+            buildInputs = [pkgs.elvish];
+            installPhase = ''
+              mkdir -p $out/bin
+              cp $src/cmd/elvfmt/elvfmt $out/bin
+            '';
+          };
+          default = elvish;
         };
       };
       flake = {
