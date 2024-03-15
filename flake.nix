@@ -47,7 +47,10 @@
             hash = "sha256-IhtVCa+9BIT9IOZY9CX29ecAVZ8lrIetdPNi5XlIwzA=";
           };
         };
+
+        packages.default = self'.packages.elvish;
       };
+
       flake = {
         nixosModules = {
           elvish = import ./modules/elvish.nix;
