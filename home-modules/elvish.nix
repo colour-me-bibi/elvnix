@@ -14,57 +14,68 @@ in {
 
   options.programs.elvish = {
     enable = mkEnableOption "elvish";
+
     package = mkOption {
       type = types.package;
       default = pkgs.elvish;
       defaultText = "pkgs.elvish";
-      description = "The elvish package to use.";
+      description = "The Elvish package to use.";
     };
+
     initExtraBeforeCompInit = mkOption {
       type = types.str;
       default = "";
-      description = "Extra code to add to the elvish rc file before the completion init.";
+      description = "Extra Elvish code to be added to the rc file before the completion initialization.";
     };
+
     initExtra = mkOption {
       type = types.str;
       default = "";
-      description = "Extra code to add to the elvish rc file.";
+      description = "Extra Elvish code to be added to the rc file after the completion initialization and other configurations.";
     };
+
     aliases = mkOption {
       type = types.attrs;
       default = {};
       description = "A set of aliases to add to the elvish rc file.";
     };
+
     packageSources = mkOption {
       type = types.listOf types.str;
       default = [];
       description = "A list of package sources to add to the elvish rc file.";
     };
+
     usePath = mkOption {
       type = types.bool;
       default = true;
       description = "Whether to use the builtin path module.";
     };
+
     useRe = mkOption {
       type = types.bool;
       default = true;
       description = "Whether to use the builtin re module.";
     };
+
     useReadlineBinding = mkOption {
       type = types.bool;
       default = true;
       description = "Whether to use the readline binding.";
     };
+
     useStr = mkOption {
       type = types.bool;
       default = true;
       description = "Whether to use the builtin str module.";
     };
+
     useMath = mkOption {
       type = types.bool;
       default = true;
       description = "Whether to use the builtin math module.";
     };
+
     extraModules = mkOption {
       type = types.listOf types.attrs;
       default = [];
