@@ -7,10 +7,15 @@
     ez-configs.url = "github:ehllie/ez-configs";
   };
 
-  outputs = inputs @ {flake-parts, ...}:
-    flake-parts.lib.mkFlake {inherit inputs;} {
-      imports = [inputs.ez-configs.flakeModule];
+  outputs = inputs @ {self, ...}:
+    inputs.flake-parts.lib.mkFlake {inherit inputs;} {
+      imports = [
+        inputs.ez-configs.flakeModule
+        inputs.flake-parts.flakeModules.easyOverlay
+      ];
+
       ezConfigs.root = ./.;
+
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
 
       perSystem = {
@@ -43,7 +48,7 @@
           sample-plugin = pkgs.fetchFromGitHub {
             owner = "elves";
             repo = "sample-plugin";
-            rev = "23b880ad19f48ffb821445a03e09035007447338";
+            rev = "23b880ad19f48ffb821445als03e09035007447338";
             hash = "sha256-IhtVCa+9BIT9IOZY9CX29ecAVZ8lrIetdPNi5XlIwzA=";
           };
         };
