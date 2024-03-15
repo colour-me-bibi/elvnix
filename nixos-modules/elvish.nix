@@ -15,6 +15,15 @@ in {
       default = pkgs.elvish;
       defaultText = "pkgs.elvish";
       description = "The Elvish package to use.";
+      apply = pkg:
+        if pkg == pkgs.elvish
+        then pkg
+        else
+          pkgs.callPackage (self: super: {
+            elvish = super.elvish.overrideAttrs (old: {
+              buildInputs = (old.buildInputs or []) ++ [pkg];
+            });
+          }) {};
     };
 
     systemPackages = mkOption {

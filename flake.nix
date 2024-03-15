@@ -10,9 +10,7 @@
   outputs = inputs @ {flake-parts, ...}:
     flake-parts.lib.mkFlake {inherit inputs;} {
       imports = [inputs.ez-configs.flakeModule];
-
       ezConfigs.root = ./.;
-
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
 
       perSystem = {
@@ -40,36 +38,12 @@
         });
 
         packages.elvishPlugins = {
-          plugin1 =
-            pkgs.fetchFromGitHub {
-            };
-          plugin2 =
-            pkgs.fetchFromGitHub {
-            };
-        };
-
-        lib.elvishWithPlugins = plugins:
-          pkgs.symlinkJoin {
-            name = "elvish-with-plugins";
-            paths = [self'.packages.elvish] ++ plugins;
-            buildInputs = [pkgs.makeWrapper];
-            postBuild = ''
-              wrapProgram $out/bin/elvish --set CGO_ENABLED 1
-            '';
+          sample-plugin = pkgs.fetchFromGitHub {
+            owner = "elves";
+            repo = "sample-plugin";
+            rev = "23b880ad19f48ffb821445a03e09035007447338";
+            hash = "sha256-IhtVCa+9BIT9IOZY9CX29ecAVZ8lrIetdPNi5XlIwzA=";
           };
-
-        packages.elvishWithPlugins = self'.lib.elvishWithPlugins (
-          with self'.packages.elvishPlugins; [
-            plugin1
-            plugin2
-            # ...
-          ]
-        );
-
-        packages.default = self'.packages.elvishWithPlugins;
-
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [self'.packages.default];
         };
 
         nixosModules = {
