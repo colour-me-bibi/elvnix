@@ -11,6 +11,8 @@
     flake-parts.lib.mkFlake {inherit inputs;} {
       imports = [inputs.ez-configs.flakeModule];
 
+      ezConfigs.root = ./.;
+
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
 
       perSystem = {
