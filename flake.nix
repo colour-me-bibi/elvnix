@@ -19,6 +19,8 @@
         self',
         ...
       }: {
+        formatter = pkgs.alejandra;
+
         packages.elvish = pkgs.elvish.overrideAttrs (oldAttrs: rec {
           version = "unstable-${builtins.substring 0 7 rev}";
           rev = "62d69b4fa223e1e38c4fa0b0af60620764410d68";
@@ -45,7 +47,8 @@
             hash = "sha256-IhtVCa+9BIT9IOZY9CX29ecAVZ8lrIetdPNi5XlIwzA=";
           };
         };
-
+      };
+      flake = {
         nixosModules = {
           elvish = import ./modules/elvish.nix;
         };
