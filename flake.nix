@@ -17,7 +17,6 @@
         nixosModule = { config, ... }: {
           nixpkgs.overlays = [ self.overlay ];
           programs.elvish = {
-            enable = true;
             {
               config,
               lib,
