@@ -1,57 +1,31 @@
 {
   description = "Elvish shell configuration and packages";
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    flake-parts.url = "github:hercules-ci/flake-parts";
   };
-  outputs = {
+
+  outputs = inputs @ {
     self,
     nixpkgs,
-    flake-utils,
+    flake-parts,
+    ...
   }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [self.overlay];
-        };
-      in {
-        nixosModule = {config, ...}: {
-          nixpkgs.overlays = [self.overlay];
-          programs.elvish = {
-            enable = true;
-            config = {
-              interactiveShellInit = ''
-                # Your interactive shell initialization code here
-              '';
-              loginShellInit = ''
-                # Your login shell initialization code here
-              '';
-              promptInit = ''
-                # Your prompt initialization code here
-              '';
-            };
-          };
-        };
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
 
-        homeModule = {config, ...}: {
-          nixpkgs.overlays = [self.overlay];
-          programs.elvish = {
-            enable = true;
-            package = pkgs.elvish;
-            initExtra = ''
-              # Your extra initialization code here
-            '';
-          };
-        };
+      perSystem = {
+        config,
+        self',
+        inputs',
+        pkgs,
+        system,
+        ...
+      }: {
+        formatter = pkgs.nixpkgs-fmt;
 
-        packages = {
-          elvfmt = pkgs.elvfmt;
-          elvishPlugins = pkgs.elvishPlugins;
-          elvish = pkgs.elvish;
-        };
-
-        overlay = final: prev: {
+        packages = rec {
           elvfmt = pkgs.stdenv.mkDerivation {
             name = "elvfmt";
             src = pkgs.fetchFromGitHub {
@@ -76,7 +50,7 @@
             };
           };
 
-          elvish = prev.elvish.overrideAttrs (oldAttrs: rec {
+          elvish = pkgs.elvish.overrideAttrs (oldAttrs: rec {
             version = "unstable-${builtins.substring 0 7 rev}";
             rev = "62d69b4fa223e1e38c4fa0b0af60620764410d68";
             src = pkgs.fetchFromGitHub {
@@ -93,7 +67,58 @@
               "-X src.elv.sh/pkg/buildinfo.Reproducible=true"
             ];
           });
+
+          default = elvish;
         };
-      }
-    );
+
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [elvish elvfmt];
+        };
+      };
+
+      flake = {
+        nixosModules = rec {
+          elvnix = {config, ...}: {
+            nixpkgs.overlays = [self.overlays.default];
+            programs.elvish = {
+              enable = true;
+              config = {
+                interactiveShellInit = ''
+                  # Your interactive shell initialization code here
+                '';
+                loginShellInit = ''
+                  # Your login shell initialization code here
+                '';
+                promptInit = ''
+                  # Your prompt initialization code here
+                '';
+              };
+            };
+          };
+          default = elvnix;
+        };
+
+        homeModules = rec {
+          elvnix = {config, ...}: {
+            nixpkgs.overlays = [self.overlays.default];
+            programs.elvish = {
+              enable = true;
+              package = config.packages.elvish;
+              initExtra = ''
+                # Your extra initialization code here
+              '';
+            };
+          };
+          default = elvnix;
+        };
+
+        overlays = {
+          default = final: prev: {
+            elvfmt = self.packages.${prev.system}.elvfmt;
+            elvishPlugins = self.packages.${prev.system}.elvishPlugins;
+            elvish = self.packages.${prev.system}.elvish;
+          };
+        };
+      };
+    };
 }
